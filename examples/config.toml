@@ -1,0 +1,49 @@
+[engine]
+    type = "scrapy"
+
+[engine.settings]
+LOG_LEVEL = 'INFO'
+CONCURRENT_REQUESTS = 4
+DOWNLOAD_DELAY = 0.1
+PROXIES = [
+    
+    'http://mobi8:Infi2132@api.yourproxy.click:5108'
+]
+USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+
+[engine.settings.DOWNLOADER_MIDDLEWARES]
+'salesnext_crawler.engines.scrapy.middleware.RandomizedProxyMiddleware' = 740
+
+[engine.settings.DOWNLOAD_HANDLERS]
+http = 'salesnext_crawler.engines.scrapy.downloader.curl_impersonate.CurlImpersonateDownloadHandler'
+https = 'salesnext_crawler.engines.scrapy.downloader.curl_impersonate.CurlImpersonateDownloadHandler'
+
+    [filesystems]
+
+    [filesystems.local]
+    type = 'LocalFileSystem'
+
+    # List of storages
+    [storages]
+
+    [storages.event_detail]
+    type = 'pyarrow'
+    format = 'parquet'
+    filesystem = 'local'
+    path = 'data/{crawler_id}/event_detail/{chunk}.parquet'
+    chunk_size = 1000
+
+    
+
+    [readers]
+
+    [readers.crawled_event]
+    type = 'pyarrow'
+    format = 'parquet'
+    filesystem = 'local'
+    path = 'event_detail/*.csv'
+
+    
+
+    [crawler]
+    classname = 'biz_play_crawler.biz_play_crawler.BizPlayCrawler'
