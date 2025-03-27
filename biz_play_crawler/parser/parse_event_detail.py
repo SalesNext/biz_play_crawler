@@ -24,7 +24,6 @@ def parse_event_detail(event :CrawlEvent[None, Event, HtmlResponse],
         category_url = None 
     category_text = response.xpath(f"//a[@itemid='{category_url}']/span/text()").get()
     data.event_category = Category(text=category_text, href=category_url)
-    print(category_url)
     video_title = response.xpath("//span[@class='title mr-2']/text()").getall()
     video_timeline = response.xpath("//span[@class='time']/text()").getall()
     
