@@ -5,7 +5,7 @@ description = ""
 authors = ["hai-pham-theinfitech <hai_pham@theinfitech.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.9.13"
+python = "^3.9"
 
 [tool.poetry.dev-dependencies]
 salesnext-crawler = { git = "git@github.com:SalesNext/salesnext-crawler.git", branch = "event" }
