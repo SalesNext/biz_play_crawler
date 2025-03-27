@@ -11,7 +11,7 @@ import re
 from typing import TypedDict
 
 class CrawledEventIds(TypedDict):
-    event_ids: list[str]
+    crawled_event_ids: list[str]
     
 def parse_event_list(event :CrawlEvent[None, Event, HtmlResponse],
                        response: HtmlResponse) -> Iterable[Event]:
@@ -22,8 +22,8 @@ def parse_event_list(event :CrawlEvent[None, Event, HtmlResponse],
     valid_urls = list(set(valid_urls))
     
     for url in valid_urls:
-        
-        yield CrawlEvent(
+        if url not in event.metadata["crawled_event_ids"]:
+         yield CrawlEvent(
             request = Request(url),
             metadata = None,
             callback = parse_event_detail,
