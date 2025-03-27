@@ -17,24 +17,18 @@ def parse_event_detail(event :CrawlEvent[None, Event, HtmlResponse],
     
     breadcrumb_urls = response.xpath("//a[@itemprop='item']/@href").getall()
     category_urls = [id for id in breadcrumb_urls if '/category/' in id]
-    category_url = category_urls[-1]
-    try:
-        category_url = category_urls[-1]
-    except IndexError:
-        category_url = None 
+    category_url = category_urls[-1] if category_urls else None
     category_text = response.xpath(f"//a[@itemid='{category_url}']/span/text()").get()
-    category_dict = {}
-    category_dict["text"] = category_text
-    category_dict["href"] = category_url
-    data.event_category = category_dict
+    data.event_categories = {"text": category_text, "href": category_url}
+    
     
     video_title = response.xpath("//span[@class='title mr-2']/text()").getall()
     video_timeline = response.xpath("//span[@class='time']/text()").getall()
     
     event_video_content = []
     for title, time_at in zip(video_title, video_timeline):
-        event_video_content.append(VideoTimeLine(title=title, time_at=time_at))
-    data.event_video_content = event_video_content if event_video_content else None
+        event_video_content.append(VideoTimeline(title=title, time_at=time_at))
+    data.event_video_timelines = event_video_content if event_video_content else None
     
     data.event_description_title =  " ".join(response.xpath("normalize-space(//div[@class='description']//strong//text())").getall())
     data.event_description_content = " ".join(response.xpath("//div[@class='description']//p//text()").getall())
@@ -50,7 +44,7 @@ def parse_event_detail(event :CrawlEvent[None, Event, HtmlResponse],
         name = instructor.xpath("./div[3]/text()").get()
         description = " ".join(instructor.xpath("./div[4]//p/text()").getall())
         instructor_list.append(Speaker(company=company, position=position, name=name, description=description))
-    data.event_speaker = instructor_list if instructor_list else None
+    data.event_speakers = instructor_list if instructor_list else None
     
     related_url = list(set(response.xpath("//div[@class='wrapper']//a/@href").getall()))
     related_url = [url for url in related_url if not any(domain in url for domain in ["facebook.com", "twitter.com","#","b.hatena.ne.jp"])]
@@ -62,7 +56,7 @@ def parse_event_detail(event :CrawlEvent[None, Event, HtmlResponse],
             data.event_book_author = book.xpath(".//div[@class='subtitle author']//h2/text()").get()
             data.event_book_publish_date = book.xpath(".//div[@class='subtitle publication-date']/text()").get().replace("発売日：", "").strip()
             data.event_book_publisher = book.xpath(".//div[@class='subtitle manufacturer']/text()").get().replace("出版社：", "").strip()
-            data.event_book_order_link = related_url            
+            data.event_book_order_urls = related_url            
             data.event_related_url = None
     else:
         data.event_related_url = related_url
@@ -70,17 +64,12 @@ def parse_event_detail(event :CrawlEvent[None, Event, HtmlResponse],
         data.event_book_author = None
         data.event_book_publish_date = None
         data.event_book_publisher = None
-        data.event_book_order_link = None
+        data.event_book_order_urls = None
         
     
     other_seminar_urls = list(set(response.xpath("//section[@class='sidebar-seminars']//a/@href").getall()))
     
-    for other_url in other_seminar_urls:
-        yield CrawlEvent(
-            request = Request(other_url),
-            metadata = None,
-            callback = parse_event_detail,
-        )
+
     yield DataEvent("event_detail", data)
     
     
